@@ -1,0 +1,10 @@
+[
+  {
+    "id": "9b08a8ec-6802-4315-813e-1d5735a7cfed",
+    "requester": "bombilla",
+    "instrument_id": "MIC-01",
+    "start": "2026-10-26T10:00:00+00:00",
+    "end": "2026-10-26T11:00:00+00:00",
+    "status": "active"
+  }
+]
