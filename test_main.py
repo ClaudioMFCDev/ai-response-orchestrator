@@ -239,3 +239,17 @@ def test_reservations_are_loaded_after_client_restart(client):
 
     assert response.status_code == 200
     assert response.json() == [created.json()]
+
+
+def test_root_serves_web_interface(client):
+    response = client.get("/")
+
+    assert response.status_code == 200
+    assert "Reservas de laboratorio" in response.text
+
+
+def test_static_assets_are_served(client):
+    response = client.get("/static/index.html")
+
+    assert response.status_code == 200
+    assert 'id="reservation-form"' in response.text

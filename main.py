@@ -8,14 +8,18 @@ from typing import Any
 from uuid import uuid4
 
 from fastapi import FastAPI, HTTPException, Query
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 INVENTORY = ("MIC-01", "MIC-02", "OSC-01", "MUL-01", "FUE-01")
+STATIC_DIR = Path(__file__).with_name("static")
 RESERVATIONS_FILE = Path(__file__).with_name("reservations.json")
 _RESERVATION_LOCK = Lock()
 _LOGGER = logging.getLogger(__name__)
 
 app = FastAPI(title="Laboratory Reservation System")
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 
 class ReservationRequest(BaseModel):
@@ -185,3 +189,8 @@ def cancel_reservation(reservation_id: str) -> dict[str, Any]:
 @app.get("/api/reservations")
 def get_reservations() -> list[dict[str, Any]]:
     return _load_reservations()
+
+
+@app.get("/")
+def get_homepage() -> FileResponse:
+    return FileResponse(STATIC_DIR / "index.html")

@@ -1,0 +1,386 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f7fa">
+  <title>Reservas de laboratorio</title>
+  <style>
+    :root {
+      color-scheme: light;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: #172033;
+      background: #f5f7fa;
+      font-synthesis: none;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-width: 320px;
+      background: #f5f7fa;
+    }
+
+    header {
+      padding: 2rem max(1.25rem, calc((100% - 1080px) / 2));
+      color: #fff;
+      background: #173b63;
+    }
+
+    header p { margin: .4rem 0 0; color: #d7e5f3; }
+    h1 { margin: 0; font-size: clamp(1.6rem, 4vw, 2.2rem); }
+    h2 { margin: 0 0 1.15rem; font-size: 1.2rem; }
+
+    main {
+      display: grid;
+      gap: 1.25rem;
+      width: min(1080px, calc(100% - 2rem));
+      margin: 1.5rem auto 3rem;
+    }
+
+    .forms {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
+      gap: 1.25rem;
+    }
+
+    .card {
+      padding: 1.4rem;
+      border: 1px solid #e1e7ef;
+      border-radius: 12px;
+      background: #fff;
+      box-shadow: 0 4px 16px rgb(23 43 77 / 5%);
+    }
+
+    .fields {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: .9rem;
+    }
+
+    .field { display: grid; gap: .4rem; }
+    .field.full { grid-column: 1 / -1; }
+    label { color: #34445a; font-size: .9rem; font-weight: 600; }
+
+    input, select {
+      width: 100%;
+      min-height: 42px;
+      padding: .6rem .7rem;
+      border: 1px solid #cbd5e1;
+      border-radius: 7px;
+      color: inherit;
+      background: #fff;
+      font: inherit;
+    }
+
+    input:focus, select:focus {
+      outline: 3px solid rgb(38 117 190 / 20%);
+      border-color: #2675be;
+    }
+
+    button {
+      min-height: 42px;
+      padding: .65rem 1rem;
+      border: 0;
+      border-radius: 7px;
+      color: #fff;
+      background: #1769aa;
+      font: inherit;
+      font-weight: 650;
+      cursor: pointer;
+    }
+
+    button:hover { background: #12578f; }
+    button:disabled { opacity: .6; cursor: wait; }
+    .secondary { color: #173b63; background: #eaf1f8; }
+    .secondary:hover { background: #dce8f3; }
+    .cancel { min-height: 34px; padding: .4rem .65rem; background: #a6333b; font-size: .85rem; }
+    .cancel:hover { background: #85262d; }
+
+    .form-actions { grid-column: 1 / -1; }
+    .message { min-height: 1.4em; margin: .8rem 0 0; font-size: .92rem; }
+    .message.error { color: #a32632; }
+    .message.success { color: #17643b; }
+    .message.info { color: #42546b; }
+
+    .availability-list { display: grid; gap: .55rem; margin-top: 1rem; }
+    .availability-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: .7rem .8rem;
+      border-radius: 7px;
+      background: #f5f7fa;
+    }
+    .available { color: #17643b; font-weight: 650; }
+    .unavailable { color: #a32632; font-weight: 650; }
+
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; text-align: left; }
+    th, td { padding: .8rem .65rem; border-bottom: 1px solid #e7ebf0; vertical-align: middle; }
+    th { color: #526176; font-size: .82rem; text-transform: uppercase; letter-spacing: .04em; }
+    td { font-size: .92rem; }
+    .status { display: inline-block; padding: .25rem .55rem; border-radius: 999px; font-size: .82rem; font-weight: 650; }
+    .status-active { color: #17643b; background: #e6f4ec; }
+    .status-cancelled { color: #5e6876; background: #edf0f3; }
+    .empty { padding: 1.4rem .5rem; color: #68778a; text-align: center; }
+
+    @media (max-width: 560px) {
+      .fields { grid-template-columns: 1fr; }
+      .field.full, .form-actions { grid-column: auto; }
+      .card { padding: 1.1rem; }
+      th, td { padding: .65rem .5rem; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Reservas de laboratorio</h1>
+    <p>Consulta la disponibilidad y organiza el uso de los equipos.</p>
+  </header>
+
+  <main>
+    <div class="forms">
+      <section class="card" aria-labelledby="availability-heading">
+        <h2 id="availability-heading">Consultar disponibilidad</h2>
+        <form id="availability-form" class="fields">
+          <div class="field full">
+            <label for="availability-instrument">Unidad</label>
+            <select id="availability-instrument" name="instrument_id" required></select>
+          </div>
+          <div class="field">
+            <label for="availability-start">Inicio</label>
+            <input id="availability-start" name="start" type="datetime-local" required>
+          </div>
+          <div class="field">
+            <label for="availability-end">Fin</label>
+            <input id="availability-end" name="end" type="datetime-local" required>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="secondary">Consultar</button>
+          </div>
+        </form>
+        <p id="availability-message" class="message" role="status" aria-live="polite"></p>
+        <div id="availability-results" class="availability-list" aria-live="polite"></div>
+      </section>
+
+      <section class="card" aria-labelledby="reservation-heading">
+        <h2 id="reservation-heading">Crear una reserva</h2>
+        <form id="reservation-form" class="fields">
+          <div class="field full">
+            <label for="reservation-instrument">Unidad</label>
+            <select id="reservation-instrument" name="instrument_id" required></select>
+          </div>
+          <div class="field full">
+            <label for="requester">Nombre del solicitante</label>
+            <input id="requester" name="requester" type="text" maxlength="200" autocomplete="name" required>
+          </div>
+          <div class="field">
+            <label for="reservation-start">Inicio</label>
+            <input id="reservation-start" name="start" type="datetime-local" required>
+          </div>
+          <div class="field">
+            <label for="reservation-end">Fin</label>
+            <input id="reservation-end" name="end" type="datetime-local" required>
+          </div>
+          <div class="form-actions">
+            <button type="submit">Reservar equipo</button>
+          </div>
+        </form>
+        <p id="reservation-message" class="message" role="status" aria-live="polite"></p>
+      </section>
+    </div>
+
+    <section class="card" aria-labelledby="reservations-heading">
+      <h2 id="reservations-heading">Reservas existentes</h2>
+      <p id="list-message" class="message" role="status" aria-live="polite"></p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Unidad</th>
+              <th>Solicitante</th>
+              <th>Inicio</th>
+              <th>Fin</th>
+              <th>Estado</th>
+              <th>Acción</th>
+            </tr>
+          </thead>
+          <tbody id="reservations-body"></tbody>
+        </table>
+        <div id="empty-state" class="empty" hidden>No hay reservas registradas.</div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const inventory = ["MIC-01", "MIC-02", "OSC-01", "MUL-01", "FUE-01"];
+    const reservationBody = document.getElementById("reservations-body");
+    const emptyState = document.getElementById("empty-state");
+
+    function setMessage(element, text, kind = "info") {
+      element.textContent = text;
+      element.className = `message ${kind}`;
+    }
+
+    async function request(url, options = {}) {
+      const response = await fetch(url, {
+        ...options,
+        headers: { "Content-Type": "application/json", ...options.headers },
+      });
+      const body = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        const detail = body.detail;
+        const message = Array.isArray(detail)
+          ? detail.map((item) => item.msg).join(" ")
+          : detail || `La solicitud falló (${response.status}).`;
+        throw new Error(message);
+      }
+      return body;
+    }
+
+    function fillInstrumentOptions() {
+      for (const selectId of ["availability-instrument", "reservation-instrument"]) {
+        const select = document.getElementById(selectId);
+        for (const instrument of inventory) {
+          const option = document.createElement("option");
+          option.value = instrument;
+          option.textContent = instrument;
+          select.append(option);
+        }
+      }
+    }
+
+    function toLocalDateTime(value) {
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return value;
+      return new Intl.DateTimeFormat("es", {
+        dateStyle: "medium",
+        timeStyle: "short",
+      }).format(date);
+    }
+
+    async function loadReservations() {
+      const message = document.getElementById("list-message");
+      try {
+        const reservations = await request("/api/reservations");
+        reservationBody.replaceChildren();
+        emptyState.hidden = reservations.length !== 0;
+
+        for (const reservation of reservations) {
+          const row = document.createElement("tr");
+          const values = [
+            reservation.instrument_id,
+            reservation.requester,
+            toLocalDateTime(reservation.start),
+            toLocalDateTime(reservation.end),
+          ];
+          for (const value of values) {
+            const cell = document.createElement("td");
+            cell.textContent = value;
+            row.append(cell);
+          }
+
+          const statusCell = document.createElement("td");
+          const status = document.createElement("span");
+          status.className = `status status-${reservation.status}`;
+          status.textContent = reservation.status === "active" ? "Activa" : "Cancelada";
+          statusCell.append(status);
+          row.append(statusCell);
+
+          const actionCell = document.createElement("td");
+          if (reservation.status === "active") {
+            const cancelButton = document.createElement("button");
+            cancelButton.type = "button";
+            cancelButton.className = "cancel";
+            cancelButton.textContent = "Cancelar";
+            cancelButton.setAttribute("aria-label", `Cancelar reserva de ${reservation.instrument_id}`);
+            cancelButton.addEventListener("click", () => cancelReservation(reservation.id));
+            actionCell.append(cancelButton);
+          } else {
+            actionCell.textContent = "—";
+          }
+          row.append(actionCell);
+          reservationBody.append(row);
+        }
+        setMessage(message, "");
+      } catch (error) {
+        setMessage(message, error.message, "error");
+      }
+    }
+
+    async function cancelReservation(id) {
+      try {
+        await request(`/api/reservations/${encodeURIComponent(id)}/cancel`, {
+          method: "PATCH",
+        });
+        setMessage(document.getElementById("list-message"), "Reserva cancelada.", "success");
+        await loadReservations();
+      } catch (error) {
+        setMessage(document.getElementById("list-message"), error.message, "error");
+      }
+    }
+
+    document.getElementById("availability-form").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const form = event.currentTarget;
+      const data = new FormData(form);
+      const results = document.getElementById("availability-results");
+      const message = document.getElementById("availability-message");
+      const query = new URLSearchParams({
+        start: data.get("start"),
+        end: data.get("end"),
+        instrument_id: data.get("instrument_id"),
+      });
+      results.replaceChildren();
+      setMessage(message, "Consultando disponibilidad...");
+      try {
+        const response = await request(`/api/availability?${query}`);
+        for (const item of response.availability) {
+          const line = document.createElement("div");
+          line.className = "availability-item";
+          const name = document.createElement("strong");
+          name.textContent = item.instrument_id;
+          const state = document.createElement("span");
+          state.className = item.available ? "available" : "unavailable";
+          state.textContent = item.available ? "Disponible" : "No disponible";
+          line.append(name, state);
+          results.append(line);
+        }
+        setMessage(message, "Consulta completada.", "success");
+      } catch (error) {
+        setMessage(message, error.message, "error");
+      }
+    });
+
+    document.getElementById("reservation-form").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const form = event.currentTarget;
+      const data = new FormData(form);
+      const message = document.getElementById("reservation-message");
+      const button = form.querySelector('button[type="submit"]');
+      const payload = Object.fromEntries(data.entries());
+      button.disabled = true;
+      setMessage(message, "Guardando reserva...");
+      try {
+        await request("/api/reservations", {
+          method: "POST",
+          body: JSON.stringify(payload),
+        });
+        form.reset();
+        setMessage(message, "Reserva creada correctamente.", "success");
+        await loadReservations();
+      } catch (error) {
+        setMessage(message, error.message, "error");
+      } finally {
+        button.disabled = false;
+      }
+    });
+
+    fillInstrumentOptions();
+    loadReservations();
+  </script>
+</body>
+</html>
